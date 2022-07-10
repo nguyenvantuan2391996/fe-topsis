@@ -1,19 +1,23 @@
-import { CreateUser } from "../apis/UserApi";
 import UserModel from "../model/User";
 import { openNotification } from "../helper/Notification";
 import { useState } from "react";
 import { STATUS_CODE } from "../commons/Config";
-import SlackModel from "../model/Slack";
-import { NotifySlack } from "../apis/SlackApi";
-import { ToMessageSlackSignUp } from "../helper/SlackHelper";
+import { useNavigate } from "react-router-dom";
+import { CreateUser } from "../apis/UserAPI";
+import { handleMapError } from "../helper/Helper";
 
 export interface UseUserResult {
+  errorValidate: Map<string, string> | undefined;
   loading: boolean;
   handleSignUpUser(userInput: UserModel.User): void;
 }
 
 export function useUserList(): UseUserResult {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [errorValidate, setErrorValidate] = useState<Map<string, string>>();
+
+  // API create user
   const handleSignUpUser = async (userInput: UserModel.User) => {
     try {
       setLoading(true);
@@ -21,16 +25,13 @@ export function useUserList(): UseUserResult {
       if (payload.status === STATUS_CODE.CREATE_SUCCESS) {
         openNotification("success", "Sign up success");
 
-        // Notify to slack
-        const messageSlack: SlackModel.MessageSignUp = {
-          user_name: userInput.user_name,
-          phone: userInput.phone,
-          email: userInput.email,
-          created_at: Date.now(),
-        };
-        await NotifySlack(ToMessageSlackSignUp(messageSlack));
+        // Save local storage
+        localStorage.setItem("user_info", JSON.stringify(payload.data));
+
+        // Redirect
+        navigate("/standard");
       } else {
-        throw payload.data;
+        setErrorValidate(handleMapError(payload.data));
       }
     } catch (error: any) {
       openNotification("error", `Error sign up user: ${error}`);
@@ -40,6 +41,7 @@ export function useUserList(): UseUserResult {
   };
 
   return {
+    errorValidate,
     loading,
     handleSignUpUser,
   };

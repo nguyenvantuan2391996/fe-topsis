@@ -59,8 +59,17 @@ export const CONTACT = {
 
 export const STATUS_CODE = {
   CREATE_SUCCESS: 201,
-  GET_SUCCESS: 200,
+  SUCCESS: 200,
   BAD_REQUEST: 400,
   NOT_FOUND: 401,
   SERVER_ERROR: 500,
 };
+
+export const MODAL = {
+  OK_TEXT: "Confirm",
+  CANCEL_TEXT: "Cancel",
+};
+
+export const TITLE_DELETE = (text: string): string => `Delete ${text}`;
+export const DELETE_MODAL_TITLE = (text: string): string =>
+  `Are you sure you want to permanently delete ${text}?`;
