@@ -1,7 +1,27 @@
 import React from "react";
 import "./App.css";
 import "antd/dist/antd.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import SignUpPage from "./pages/SignUpPage";
+import StandardPage from "./pages/StandardPage";
+import ScoreRatingPage from "./pages/ScoreRatingPage";
+import ConsultPage from "./pages/ConsultPage";
+
+const PrivateRoute = (props: { children: React.ReactNode }): JSX.Element => {
+  const { children } = props;
+  const isLoggedIn: boolean = localStorage.getItem("user_info") !== null;
+  return isLoggedIn ? <>{children}</> : <Navigate replace={true} to="/" />;
+};
+
+const PrivateRouteV2 = (props: { children: React.ReactNode }): JSX.Element => {
+  const { children } = props;
+  const isLoggedIn: boolean = localStorage.getItem("user_info") !== null;
+  return isLoggedIn ? (
+    <Navigate replace={true} to="/standard" />
+  ) : (
+    <>{children}</>
+  );
+};
 
 function App() {
   return (
@@ -13,40 +33,53 @@ function App() {
           <Route
             path="/"
             element={
+              <PrivateRouteV2>
+                <SignUpPage />
+              </PrivateRouteV2>
+            }
+          />
+          <Route
+            path="/standard"
+            element={
               <div
                 style={{
-                  backgroundImage: "url(images/m8c20gchf7231.jpg)",
-                  backgroundSize: "cover",
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "center center",
-                  width: "auto",
+                  marginTop: 24,
+                  marginLeft: 24,
                 }}
               >
-                <SignIn />
+                <PrivateRoute>
+                  <StandardPage />
+                </PrivateRoute>
               </div>
             }
           />
           <Route
-            path="/sign-up"
+            path="/score-rating"
             element={
               <div
                 style={{
-                  backgroundImage: "url(images/background.jpg)",
-                  backgroundSize: "cover",
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "center center",
-                  width: "auto",
+                  marginTop: 24,
+                  marginLeft: 24,
                 }}
               >
-                <SignUp />
+                <PrivateRoute>
+                  <ScoreRatingPage />
+                </PrivateRoute>
               </div>
             }
           />
           <Route
-            path="/dashboard"
+            path="/consult"
             element={
-              <div style={{ marginTop: 24, marginLeft: 24 }}>
-                <Dashboard />
+              <div
+                style={{
+                  marginTop: 24,
+                  marginLeft: 24,
+                }}
+              >
+                <PrivateRoute>
+                  <ConsultPage />
+                </PrivateRoute>
               </div>
             }
           />

@@ -1,10 +1,10 @@
-import { END_POINT } from "./Endpoints";
+import { END_POINT, USERS_POINT } from "./Endpoints";
 import axios from "axios";
 import UserModel from "../model/User";
 
 export async function CreateUser(userParam: UserModel.User): Promise<any> {
   try {
-    const urlCreateUser: string = END_POINT + "user";
+    const urlCreateUser: string = `${END_POINT}/${USERS_POINT}`;
     const { data, status } = await axios.post<UserModel.User>(
       urlCreateUser,
       userParam,
