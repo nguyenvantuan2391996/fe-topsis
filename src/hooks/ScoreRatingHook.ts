@@ -3,11 +3,13 @@ import { useState } from "react";
 import { STATUS_CODE } from "../commons/Config";
 import { GetScoreRatings } from "../apis/ScoreRatingAPI";
 import ScoreRatingModel from "../model/ScoreRating";
+import StandardModel from "../model/Standard";
 
 export interface UseScoreRatingResult {
   loading: boolean;
   scoreRatings: any[];
   handleScoreRating(userID: string): void;
+  addStateScoreRating(input: any): void;
 }
 
 export function useScoreRatingList(): UseScoreRatingResult {
@@ -27,6 +29,7 @@ export function useScoreRatingList(): UseScoreRatingResult {
           );
 
           let data: any = {};
+          data.id = payload.data[i].id;
           data.stt = i + 1;
           data.name = metadataStruct[0].name;
           for (const metadata of metadataStruct) {
@@ -34,6 +37,18 @@ export function useScoreRatingList(): UseScoreRatingResult {
           }
 
           scoreRatingRes.push(data);
+        }
+
+        // If standard_name is not existed in score rating
+        const standards: StandardModel.Standard[] = JSON.parse(
+          localStorage.getItem("standards_info") as string
+        );
+        for (const st of standards) {
+          for (const sr of scoreRatingRes) {
+            if (!sr[st.standard_name]) {
+              sr[st.standard_name] = 0;
+            }
+          }
         }
 
         setScoreRatings(scoreRatingRes);
@@ -48,9 +63,14 @@ export function useScoreRatingList(): UseScoreRatingResult {
     }
   };
 
+  const addStateScoreRating = (input: any) => {
+    setScoreRatings([...scoreRatings, input]);
+  };
+
   return {
     loading,
     scoreRatings,
     handleScoreRating,
+    addStateScoreRating,
   };
 }
