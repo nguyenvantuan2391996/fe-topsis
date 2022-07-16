@@ -1,5 +1,6 @@
 import { END_POINT, SCORE_RATING_POINT } from "./Endpoints";
 import axios from "axios";
+import ScoreRatingModel from "../model/ScoreRating";
 
 export async function GetScoreRatings(userID: string): Promise<any> {
   try {
@@ -10,6 +11,27 @@ export async function GetScoreRatings(userID: string): Promise<any> {
         Accept: "application/json",
       },
     });
+    return { data, status };
+  } catch (error: any) {
+    return error.response;
+  }
+}
+
+export async function UpdateScoreRatings(
+  input: ScoreRatingModel.ScoreRating
+): Promise<any> {
+  try {
+    const urlUpdateScoreRatings: string = `${END_POINT}/${SCORE_RATING_POINT}`;
+    const { data, status } = await axios.put<ScoreRatingModel.ScoreRating>(
+      urlUpdateScoreRatings,
+      input,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
     return { data, status };
   } catch (error: any) {
     return error.response;

@@ -9,10 +9,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useScoreRatingList } from "../hooks/ScoreRatingHook";
 import StandardModel from "../model/Standard";
+import ScoreRatingModel from "../model/ScoreRating";
 
 const style: React.CSSProperties = { padding: "8px 0" };
 
-const EditableContext = React.createContext<FormInstance<any> | null>(null);
+const EditableContext = React.createContext<FormInstance | null>(null);
 
 interface EditableRowProps {
   index: number;
@@ -104,7 +105,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
 };
 
 const ScoreRatingPage: React.FC = () => {
-  const [columns, setColumns] = useState<any[]>([
+  let [columns, setColumns] = useState<any[]>([
     {
       title: "Số thứ tự",
       dataIndex: "stt",
@@ -116,12 +117,33 @@ const ScoreRatingPage: React.FC = () => {
       key: "name",
       editable: true,
     },
+    {
+      title: "Hành động",
+      dataIndex: "action",
+      key: "action",
+      render: (value: unknown) => (
+        <Button
+          type="primary"
+          danger
+          // onClick={() =>
+          //     deleteStandard(record.id as string, record.standard_name)
+          // }
+        >
+          Xoá
+        </Button>
+      ),
+    },
   ]);
 
   const navigate = useNavigate();
   const rendered = useRef(false);
-  const { loading, scoreRatings, handleScoreRating, addStateScoreRating } =
-    useScoreRatingList();
+  const {
+    loading,
+    scoreRatings,
+    handleScoreRating,
+    handleUpdateScoreRating,
+    addStateScoreRating,
+  } = useScoreRatingList();
 
   useEffect(() => {
     if (!rendered.current) {
@@ -132,8 +154,9 @@ const ScoreRatingPage: React.FC = () => {
         localStorage.getItem("standards_info") as string
       );
       if (!!standards) {
+        setColumns(columns.slice(0, 3));
         for (const standard of standards) {
-          columns.push({
+          columns.splice(2, 0, {
             title: standard.standard_name,
             dataIndex: standard.standard_name,
             key: standard.standard_name,
@@ -141,7 +164,6 @@ const ScoreRatingPage: React.FC = () => {
           });
         }
       }
-
       const customColumns = columns.map((col) => {
         if (!col.editable) {
           return col;
@@ -173,14 +195,39 @@ const ScoreRatingPage: React.FC = () => {
   const handleAdd = () => {
     const newData = {
       ...scoreRatings[0],
+      name: "Example name",
       stt: scoreRatings.length + 1,
-      id: "hihi",
+      id: scoreRatings.length + 1,
     };
+    const standards: StandardModel.Standard[] = JSON.parse(
+      localStorage.getItem("standards_info") as string
+    );
+    for (const value of standards) {
+      newData[value.standard_name] = 0;
+    }
     addStateScoreRating(newData);
   };
 
-  const handleSave = (newData: any) => {
-    console.log(newData);
+  const handleSave = async (newData: any) => {
+    const standards: StandardModel.Standard[] = JSON.parse(
+      localStorage.getItem("standards_info") as string
+    );
+    const metadata: ScoreRatingModel.MetadataStruct[] = [];
+    if (standards.length > 0) {
+      for (const value of standards) {
+        metadata.push({
+          name: newData.name,
+          standard_name: value.standard_name,
+          score: Number(newData[value.standard_name]),
+        });
+      }
+      const input: ScoreRatingModel.ScoreRating = {
+        id: newData.id,
+        metadata: JSON.stringify(metadata),
+      };
+      await handleUpdateScoreRating(input);
+      rendered.current = false;
+    }
   };
 
   const handleSaveData = () => {

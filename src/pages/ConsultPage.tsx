@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Col, Row, Spin, Table } from "antd";
 import { ColumnsType } from "antd/es/table";
 import { FileAddOutlined } from "@ant-design/icons";
@@ -7,20 +7,20 @@ import { useConsultList } from "../hooks/ConsultHook";
 const style: React.CSSProperties = { padding: "8px 0" };
 
 const ConsultPage: React.FC = () => {
-  const rendered = useRef(false);
   const { loading, resultConsult, handleGetResultConsult } = useConsultList();
+  const [isConsult, setisConsult] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!rendered.current) {
+    if (isConsult) {
       handleGetResultConsult(
         JSON.parse(localStorage.getItem("user_info") as string).id
       );
-      rendered.current = true;
+      setisConsult(false);
     }
-  }, [rendered.current]);
+  }, [isConsult]);
 
   const handleConsult = () => {
-    rendered.current = false;
+    setisConsult(true);
   };
 
   const columns: ColumnsType<any> = [

@@ -1,7 +1,7 @@
 import { openNotification } from "../helper/Notification";
 import { useState } from "react";
 import { STATUS_CODE } from "../commons/Config";
-import { GetScoreRatings } from "../apis/ScoreRatingAPI";
+import { GetScoreRatings, UpdateScoreRatings } from "../apis/ScoreRatingAPI";
 import ScoreRatingModel from "../model/ScoreRating";
 import StandardModel from "../model/Standard";
 
@@ -9,6 +9,7 @@ export interface UseScoreRatingResult {
   loading: boolean;
   scoreRatings: any[];
   handleScoreRating(userID: string): void;
+  handleUpdateScoreRating(input: ScoreRatingModel.ScoreRating): void;
   addStateScoreRating(input: any): void;
 }
 
@@ -63,6 +64,24 @@ export function useScoreRatingList(): UseScoreRatingResult {
     }
   };
 
+  const handleUpdateScoreRating = async (
+    input: ScoreRatingModel.ScoreRating
+  ) => {
+    try {
+      setLoading(true);
+      const payload = await UpdateScoreRatings(input);
+      if (payload.status === STATUS_CODE.SUCCESS) {
+        openNotification("success", "Update score rating success");
+      } else {
+        console.log(payload);
+      }
+    } catch (error: any) {
+      openNotification("error", `Error update score rating: ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const addStateScoreRating = (input: any) => {
     setScoreRatings([...scoreRatings, input]);
   };
@@ -71,6 +90,7 @@ export function useScoreRatingList(): UseScoreRatingResult {
     loading,
     scoreRatings,
     handleScoreRating,
+    handleUpdateScoreRating,
     addStateScoreRating,
   };
 }
