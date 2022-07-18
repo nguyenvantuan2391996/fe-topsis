@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { Button, Col, Form, FormInstance, Input, Row, Spin, Table } from "antd";
 import type { InputRef } from "antd";
 import {
+  ExclamationCircleOutlined,
   FastForwardOutlined,
   FileAddOutlined,
   SaveOutlined,
@@ -10,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 import { useScoreRatingList } from "../hooks/ScoreRatingHook";
 import StandardModel from "../model/Standard";
 import ScoreRatingModel from "../model/ScoreRating";
+import { showConfirmModal } from "../helper/Notification";
+import { DELETE_MODAL_TITLE, TITLE_DELETE } from "../commons/Config";
 
 const style: React.CSSProperties = { padding: "8px 0" };
 
@@ -68,7 +71,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
       const values = await form.validateFields();
 
       toggleEdit();
-      handleSave({ ...record, ...values });
+      // handleSave({ ...record, ...values });
     } catch (errInfo) {
       console.log("Save failed:", errInfo);
     }
@@ -121,13 +124,11 @@ const ScoreRatingPage: React.FC = () => {
       title: "Hành động",
       dataIndex: "action",
       key: "action",
-      render: (value: unknown) => (
+      render: (value: unknown, record: any) => (
         <Button
           type="primary"
           danger
-          // onClick={() =>
-          //     deleteStandard(record.id as string, record.standard_name)
-          // }
+          onClick={() => deleteScoreRating(record.id as string, record.name)}
         >
           Xoá
         </Button>
@@ -142,6 +143,7 @@ const ScoreRatingPage: React.FC = () => {
     scoreRatings,
     handleScoreRating,
     handleUpdateScoreRating,
+    handleDeleteScoreRating,
     addStateScoreRating,
   } = useScoreRatingList();
 
@@ -163,24 +165,25 @@ const ScoreRatingPage: React.FC = () => {
             editable: true,
           });
         }
+        setColumns(columns);
       }
-      const customColumns = columns.map((col) => {
-        if (!col.editable) {
-          return col;
-        }
-
-        return {
-          ...col,
-          onCell: (record: any) => ({
-            record,
-            editable: col.editable,
-            dataIndex: col.dataIndex,
-            title: col.title,
-            handleSave,
-          }),
-        };
-      });
-      setColumns(customColumns);
+      // const customColumns = columns.map((col) => {
+      //   if (!col.editable) {
+      //     return col;
+      //   }
+      //
+      //   return {
+      //     ...col,
+      //     onCell: (record: any) => ({
+      //       record,
+      //       editable: col.editable,
+      //       dataIndex: col.dataIndex,
+      //       title: col.title,
+      //       handleSave,
+      //     }),
+      //   };
+      // });
+      // setColumns(customColumns);
       rendered.current = true;
     }
   }, [rendered.current]);
@@ -232,6 +235,40 @@ const ScoreRatingPage: React.FC = () => {
 
   const handleSaveData = () => {
     console.log("handleSaveData", scoreRatings);
+  };
+
+  const deleteScoreRating = async (id: string, name: string) => {
+    // showConfirmModal({
+    //   title: TITLE_DELETE(name),
+    //   width: 516,
+    //   content: (
+    //     <div>
+    //       <div>{DELETE_MODAL_TITLE("this scorerating")}</div>
+    //     </div>
+    //   ),
+    //   icon: <ExclamationCircleOutlined />,
+    //   onOk: async () => {
+    //     await handleDeleteScoreRating(id);
+    //     rendered.current = false;
+    //   },
+    // });
+    const customColumns = await columns.map((col) => {
+      if (!col.editable) {
+        return col;
+      }
+
+      return {
+        ...col,
+        onCell: (record: any) => ({
+          record,
+          editable: col.editable,
+          dataIndex: col.dataIndex,
+          title: col.title,
+          handleSave,
+        }),
+      };
+    });
+    setColumns(customColumns);
   };
 
   return (

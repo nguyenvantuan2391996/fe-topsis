@@ -37,3 +37,21 @@ export async function UpdateScoreRatings(
     return error.response;
   }
 }
+
+export async function DeleteScoreRatings(id: string): Promise<any> {
+  try {
+    const urlDeleteScoreRatings: string = `${END_POINT}/${SCORE_RATING_POINT}/${id}`;
+    const { data, status } = await axios.delete<ScoreRatingModel.ScoreRating>(
+      urlDeleteScoreRatings,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+    return { data, status };
+  } catch (error: any) {
+    return error.response;
+  }
+}
