@@ -1,7 +1,11 @@
 import { openNotification } from "../helper/Notification";
 import { useState } from "react";
 import { STATUS_CODE } from "../commons/Config";
-import { GetScoreRatings, UpdateScoreRatings } from "../apis/ScoreRatingAPI";
+import {
+  DeleteScoreRatings,
+  GetScoreRatings,
+  UpdateScoreRatings,
+} from "../apis/ScoreRatingAPI";
 import ScoreRatingModel from "../model/ScoreRating";
 import StandardModel from "../model/Standard";
 
@@ -10,6 +14,7 @@ export interface UseScoreRatingResult {
   scoreRatings: any[];
   handleScoreRating(userID: string): void;
   handleUpdateScoreRating(input: ScoreRatingModel.ScoreRating): void;
+  handleDeleteScoreRating(id: string): void;
   addStateScoreRating(input: any): void;
 }
 
@@ -82,6 +87,22 @@ export function useScoreRatingList(): UseScoreRatingResult {
     }
   };
 
+  const handleDeleteScoreRating = async (id: string) => {
+    try {
+      setLoading(true);
+      const payload = await DeleteScoreRatings(id);
+      if (payload.status === STATUS_CODE.SUCCESS) {
+        openNotification("success", "Delete score rating success");
+      } else {
+        console.log(payload);
+      }
+    } catch (error: any) {
+      openNotification("error", `Error delete score rating: ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const addStateScoreRating = (input: any) => {
     setScoreRatings([...scoreRatings, input]);
   };
@@ -91,6 +112,7 @@ export function useScoreRatingList(): UseScoreRatingResult {
     scoreRatings,
     handleScoreRating,
     handleUpdateScoreRating,
+    handleDeleteScoreRating,
     addStateScoreRating,
   };
 }
