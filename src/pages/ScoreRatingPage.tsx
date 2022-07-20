@@ -1,5 +1,15 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Button, Col, Form, FormInstance, Input, Row, Spin, Table } from "antd";
+import {
+  Button,
+  Col,
+  Form,
+  FormInstance,
+  Input,
+  Row,
+  Space,
+  Spin,
+  Table,
+} from "antd";
 import type { InputRef } from "antd";
 import {
   ExclamationCircleOutlined,
@@ -12,7 +22,7 @@ import { useScoreRatingList } from "../hooks/ScoreRatingHook";
 import StandardModel from "../model/Standard";
 import ScoreRatingModel from "../model/ScoreRating";
 import { showConfirmModal } from "../helper/Notification";
-import { DELETE_MODAL_TITLE, TITLE_DELETE } from "../commons/Config";
+import { ACTION, DELETE_MODAL_TITLE, TITLE_DELETE } from "../commons/Config";
 
 const style: React.CSSProperties = { padding: "8px 0" };
 
@@ -39,7 +49,7 @@ interface EditableCellProps {
   children: React.ReactNode;
   dataIndex: string;
   record: any;
-  handleSave: (record: any) => void;
+  handleSaveState: (record: any) => void;
 }
 
 const EditableCell: React.FC<EditableCellProps> = ({
@@ -48,7 +58,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
   children,
   dataIndex,
   record,
-  handleSave,
+  handleSaveState,
   ...restProps
 }) => {
   const [editing, setEditing] = useState(false);
@@ -71,7 +81,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
       const values = await form.validateFields();
 
       toggleEdit();
-      // handleSave({ ...record, ...values });
+      handleSaveState({ ...record, ...values });
     } catch (errInfo) {
       console.log("Save failed:", errInfo);
     }
@@ -125,26 +135,39 @@ const ScoreRatingPage: React.FC = () => {
       dataIndex: "action",
       key: "action",
       render: (value: unknown, record: any) => (
-        <Button
-          type="primary"
-          danger
-          onClick={() => deleteScoreRating(record.id as string, record.name)}
-        >
-          Xoá
-        </Button>
+        <div>
+          {!!record.id && (
+            <Space>
+              <Button
+                type="primary"
+                danger
+                onClick={() =>
+                  deleteScoreRating(record.id as string, record.name)
+                }
+              >
+                Xoá
+              </Button>
+              <Button type="primary" onClick={() => handleSaveRecord(record)}>
+                Lưu
+              </Button>
+            </Space>
+          )}
+        </div>
       ),
     },
   ]);
 
   const navigate = useNavigate();
   const rendered = useRef(false);
+  const firstRendered = useRef(false);
   const {
     loading,
     scoreRatings,
     handleScoreRating,
     handleUpdateScoreRating,
     handleDeleteScoreRating,
-    addStateScoreRating,
+    handleBulkCreatScoreRating,
+    setStateScoreRating,
   } = useScoreRatingList();
 
   useEffect(() => {
@@ -155,8 +178,7 @@ const ScoreRatingPage: React.FC = () => {
       const standards: StandardModel.Standard[] = JSON.parse(
         localStorage.getItem("standards_info") as string
       );
-      if (!!standards) {
-        setColumns(columns.slice(0, 3));
+      if (!!standards && !firstRendered.current) {
         for (const standard of standards) {
           columns.splice(2, 0, {
             title: standard.standard_name,
@@ -165,94 +187,14 @@ const ScoreRatingPage: React.FC = () => {
             editable: true,
           });
         }
-        setColumns(columns);
       }
-      // const customColumns = columns.map((col) => {
-      //   if (!col.editable) {
-      //     return col;
-      //   }
-      //
-      //   return {
-      //     ...col,
-      //     onCell: (record: any) => ({
-      //       record,
-      //       editable: col.editable,
-      //       dataIndex: col.dataIndex,
-      //       title: col.title,
-      //       handleSave,
-      //     }),
-      //   };
-      // });
-      // setColumns(customColumns);
       rendered.current = true;
+      firstRendered.current = true;
     }
   }, [rendered.current]);
 
-  const components = {
-    body: {
-      row: EditableRow,
-      cell: EditableCell,
-    },
-  };
-
-  const handleAdd = () => {
-    const newData = {
-      ...scoreRatings[0],
-      name: "Example name",
-      stt: scoreRatings.length + 1,
-      id: scoreRatings.length + 1,
-    };
-    const standards: StandardModel.Standard[] = JSON.parse(
-      localStorage.getItem("standards_info") as string
-    );
-    for (const value of standards) {
-      newData[value.standard_name] = 0;
-    }
-    addStateScoreRating(newData);
-  };
-
-  const handleSave = async (newData: any) => {
-    const standards: StandardModel.Standard[] = JSON.parse(
-      localStorage.getItem("standards_info") as string
-    );
-    const metadata: ScoreRatingModel.MetadataStruct[] = [];
-    if (standards.length > 0) {
-      for (const value of standards) {
-        metadata.push({
-          name: newData.name,
-          standard_name: value.standard_name,
-          score: Number(newData[value.standard_name]),
-        });
-      }
-      const input: ScoreRatingModel.ScoreRating = {
-        id: newData.id,
-        metadata: JSON.stringify(metadata),
-      };
-      await handleUpdateScoreRating(input);
-      rendered.current = false;
-    }
-  };
-
-  const handleSaveData = () => {
-    console.log("handleSaveData", scoreRatings);
-  };
-
-  const deleteScoreRating = async (id: string, name: string) => {
-    // showConfirmModal({
-    //   title: TITLE_DELETE(name),
-    //   width: 516,
-    //   content: (
-    //     <div>
-    //       <div>{DELETE_MODAL_TITLE("this scorerating")}</div>
-    //     </div>
-    //   ),
-    //   icon: <ExclamationCircleOutlined />,
-    //   onOk: async () => {
-    //     await handleDeleteScoreRating(id);
-    //     rendered.current = false;
-    //   },
-    // });
-    const customColumns = await columns.map((col) => {
+  useEffect(() => {
+    const customColumns = columns.map((col) => {
       if (!col.editable) {
         return col;
       }
@@ -264,11 +206,110 @@ const ScoreRatingPage: React.FC = () => {
           editable: col.editable,
           dataIndex: col.dataIndex,
           title: col.title,
-          handleSave,
+          handleSaveState,
         }),
       };
     });
     setColumns(customColumns);
+  }, [scoreRatings]);
+
+  const components = {
+    body: {
+      row: EditableRow,
+      cell: EditableCell,
+    },
+  };
+
+  const convertScoreRatingStruct = (
+    record: any
+  ): ScoreRatingModel.ScoreRating => {
+    const standards: StandardModel.Standard[] = JSON.parse(
+      localStorage.getItem("standards_info") as string
+    );
+    const data: ScoreRatingModel.ScoreRating = {
+      id: record.id,
+      user_id: JSON.parse(localStorage.getItem("user_info") as string).id,
+      metadata: "",
+    };
+    const metadata: ScoreRatingModel.MetadataStruct[] = [];
+    if (standards.length > 0) {
+      for (const value of standards) {
+        metadata.push({
+          name: record.name,
+          standard_name: value.standard_name,
+          score: Number(record[value.standard_name]),
+        });
+      }
+      data.metadata = JSON.stringify(metadata);
+    }
+    return data;
+  };
+  const handleAdd = () => {
+    const newData = {
+      ...scoreRatings[0],
+      name: "Example name",
+      stt: scoreRatings.length + 1,
+      id: "",
+    };
+    const standards: StandardModel.Standard[] = JSON.parse(
+      localStorage.getItem("standards_info") as string
+    );
+    for (const value of standards) {
+      newData[value.standard_name] = 0;
+    }
+    setStateScoreRating(newData, ACTION.ADD);
+  };
+
+  const handleSaveState = async (newData: any) => {
+    const standards: StandardModel.Standard[] = JSON.parse(
+      localStorage.getItem("standards_info") as string
+    );
+    for (const value of standards) {
+      if (value.standard_name !== "name") {
+        newData[value.standard_name] = Number(newData[value.standard_name]);
+      }
+    }
+    const newList = [...scoreRatings];
+    const index = newList.findIndex((item) => newData.stt === item.stt);
+    const item = newList[index];
+    newList.splice(index, 1, {
+      ...item,
+      ...newData,
+    });
+    setStateScoreRating(newList, ACTION.SET);
+  };
+
+  const handleSaveRecord = async (record: any) => {
+    await handleUpdateScoreRating(convertScoreRatingStruct(record));
+    rendered.current = false;
+  };
+
+  const handleSaveData = async () => {
+    const listCreate: ScoreRatingModel.ScoreRating[] = [];
+    for (const value of scoreRatings) {
+      if (!value.id) {
+        listCreate.push(convertScoreRatingStruct(value));
+      }
+    }
+    await handleBulkCreatScoreRating(listCreate);
+    rendered.current = false;
+  };
+
+  const deleteScoreRating = async (id: string, name: string) => {
+    showConfirmModal({
+      title: TITLE_DELETE(name),
+      width: 516,
+      content: (
+        <div>
+          <div>{DELETE_MODAL_TITLE("this score rating")}</div>
+        </div>
+      ),
+      icon: <ExclamationCircleOutlined />,
+      onOk: async () => {
+        await handleDeleteScoreRating(id);
+        rendered.current = false;
+      },
+    });
   };
 
   return (

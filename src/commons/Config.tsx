@@ -11,6 +11,11 @@ export const MODAL = {
   CANCEL_TEXT: "Cancel",
 };
 
+export const ACTION = {
+  ADD: "add",
+  SET: "set",
+};
+
 export const TITLE_DELETE = (text: string): string => `Delete ${text}`;
 export const DELETE_MODAL_TITLE = (text: string): string =>
   `Are you sure you want to permanently delete ${text}?`;
