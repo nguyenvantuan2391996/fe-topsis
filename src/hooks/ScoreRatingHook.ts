@@ -1,7 +1,8 @@
 import { openNotification } from "../helper/Notification";
 import { useState } from "react";
-import { STATUS_CODE } from "../commons/Config";
+import { ACTION, STATUS_CODE } from "../commons/Config";
 import {
+  BulkCreateScoreRatings,
   DeleteScoreRatings,
   GetScoreRatings,
   UpdateScoreRatings,
@@ -15,7 +16,8 @@ export interface UseScoreRatingResult {
   handleScoreRating(userID: string): void;
   handleUpdateScoreRating(input: ScoreRatingModel.ScoreRating): void;
   handleDeleteScoreRating(id: string): void;
-  addStateScoreRating(input: any): void;
+  handleBulkCreatScoreRating(list: ScoreRatingModel.ScoreRating[]): void;
+  setStateScoreRating(input: any, action: string): void;
 }
 
 export function useScoreRatingList(): UseScoreRatingResult {
@@ -103,8 +105,36 @@ export function useScoreRatingList(): UseScoreRatingResult {
     }
   };
 
-  const addStateScoreRating = (input: any) => {
-    setScoreRatings([...scoreRatings, input]);
+  const handleBulkCreatScoreRating = async (
+    list: ScoreRatingModel.ScoreRating[]
+  ) => {
+    try {
+      if (list.length === 0) {
+        openNotification("error", "List record is empty");
+      }
+      setLoading(true);
+      const payload = await BulkCreateScoreRatings(list);
+      if (payload.status === STATUS_CODE.SUCCESS) {
+        openNotification("success", "Bulk create score rating success");
+      } else {
+        console.log(payload);
+      }
+    } catch (error: any) {
+      openNotification("error", `Error bulk create score rating: ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setStateScoreRating = (input: any, action: string) => {
+    switch (action) {
+      case ACTION.ADD:
+        setScoreRatings([...scoreRatings, input]);
+        break;
+      case ACTION.SET:
+        setScoreRatings(input);
+        break;
+    }
   };
 
   return {
@@ -113,6 +143,7 @@ export function useScoreRatingList(): UseScoreRatingResult {
     handleScoreRating,
     handleUpdateScoreRating,
     handleDeleteScoreRating,
-    addStateScoreRating,
+    handleBulkCreatScoreRating,
+    setStateScoreRating,
   };
 }

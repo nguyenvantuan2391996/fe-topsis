@@ -1,6 +1,7 @@
 namespace ScoreRatingModel {
   export interface ScoreRating {
     id?: string;
+    user_id?: string;
     metadata: string;
   }
 
