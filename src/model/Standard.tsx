@@ -11,6 +11,7 @@ namespace StandardModel {
     user_id: string;
     standard_name: string;
     weight: number;
+    type: string;
   }
 }
 

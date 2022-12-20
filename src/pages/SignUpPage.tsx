@@ -18,7 +18,10 @@ const SignUpPage: React.FC = () => {
     <Row
       justify="center"
       align="middle"
-      style={{ minHeight: "100vh", backgroundColor: "#f5f5f5" }}
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#f5f5f5",
+      }}
     >
       <Col span={6}>
         <Card bordered={true} loading={loading}>
