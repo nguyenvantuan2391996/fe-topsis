@@ -1,5 +1,15 @@
 import React, { useEffect, useRef } from "react";
-import { Alert, Button, Col, Form, Input, Row, Spin, Table } from "antd";
+import {
+  Alert,
+  Button,
+  Col,
+  Form,
+  Input,
+  Row,
+  Spin,
+  Table,
+  Select,
+} from "antd";
 import { ColumnsType } from "antd/es/table";
 import {
   FileAddOutlined,
@@ -39,11 +49,13 @@ const StandardPage: React.FC = () => {
   const onFinish = async (inputForm: {
     standard_name: string;
     weight: number;
+    type_standard: string;
   }) => {
     const bodyRequest: StandardModel.StandardBodyRequest = {
       user_id: JSON.parse(localStorage.getItem("user_info") as string).id,
       standard_name: inputForm.standard_name,
       weight: Number(inputForm.weight),
+      type: inputForm.type_standard,
     };
     await handleCreateStandard(bodyRequest);
     rendered.current = false;
@@ -83,6 +95,11 @@ const StandardPage: React.FC = () => {
       key: "weight",
     },
     {
+      title: "Kiểu tiêu chuẩn",
+      dataIndex: "type",
+      key: "type",
+    },
+    {
       title: "Hành động",
       dataIndex: "action",
       key: "action",
@@ -107,8 +124,8 @@ const StandardPage: React.FC = () => {
         form={form}
         onFinish={onFinish}
       >
-        <Row gutter={16}>
-          <Col className="gutter-row" span={8}>
+        <Row gutter={15}>
+          <Col className="gutter-row" span={6}>
             <div style={style}>
               <Form.Item name="standard_name">
                 <Input placeholder="Nhập tiêu chí" allowClear />
@@ -123,7 +140,7 @@ const StandardPage: React.FC = () => {
               )}
             </div>
           </Col>
-          <Col className="gutter-row" span={8}>
+          <Col className="gutter-row" span={6}>
             <div style={style}>
               <Form.Item
                 name="weight"
@@ -139,6 +156,33 @@ const StandardPage: React.FC = () => {
               {!!errorValidate && !!errorValidate.get("Weight") && (
                 <Alert
                   message={errorValidate.get("Weight")}
+                  type="error"
+                  showIcon={true}
+                  closable={true}
+                />
+              )}
+            </div>
+          </Col>
+          <Col className="gutter-row" span={3}>
+            <div style={style}>
+              <Form.Item name="type_standard">
+                <Select
+                  placeholder="Chọn kiểu tiêu chuẩn"
+                  options={[
+                    {
+                      value: "max-max",
+                      label: "as big as possible",
+                    },
+                    {
+                      value: "min-max",
+                      label: "as small as possible",
+                    },
+                  ]}
+                />
+              </Form.Item>
+              {!!errorValidate && !!errorValidate.get("Type") && (
+                <Alert
+                  message={errorValidate.get("Type")}
                   type="error"
                   showIcon={true}
                   closable={true}
