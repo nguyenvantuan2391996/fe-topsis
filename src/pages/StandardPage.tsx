@@ -15,6 +15,7 @@ import {
   FileAddOutlined,
   ExclamationCircleOutlined,
   FastForwardOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 import { useStandardList } from "../hooks/StandardHook";
 import StandardModel from "../model/Standard";
@@ -77,6 +78,12 @@ const StandardPage: React.FC = () => {
       },
     });
   };
+
+  const logOut = () => {
+    localStorage.removeItem("user_info");
+    localStorage.removeItem("standards_info");
+    navigate("/")
+  }
 
   const columns: ColumnsType<StandardModel.Standard> = [
     {
@@ -201,7 +208,7 @@ const StandardPage: React.FC = () => {
               </Button>
             </div>
           </Col>
-          <Col className="gutter-row" span={3}>
+          <Col className="gutter-row" span={2}>
             <div style={style}>
               <Button
                 type={"primary"}
@@ -209,6 +216,17 @@ const StandardPage: React.FC = () => {
                 onClick={() => navigate("/score-rating")}
               >
                 Chuyển
+              </Button>
+            </div>
+          </Col>
+          <Col className="gutter-row" span={1}>
+            <div style={style}>
+              <Button
+                  type={"primary"}
+                  icon={<LogoutOutlined />}
+                  onClick={logOut}
+              >
+                Đăng xuất
               </Button>
             </div>
           </Col>
