@@ -14,6 +14,12 @@ const SignUpPage: React.FC = () => {
     handleSignUpUser(userInput);
   };
 
+  const UsingExampleUser = () => {
+    localStorage.setItem("standards_info", "[]")
+    localStorage.setItem("user_info", `{"id":"1227e1cb-9840-4a19-b046-7649db432cfd","name":"Nguyen Van Tuan"}`)
+    window.location.reload()
+  }
+
   return (
     <Row
       justify="center"
@@ -53,6 +59,14 @@ const SignUpPage: React.FC = () => {
               </Button>
             </Form.Item>
           </Form>
+          <Button
+              style={{ marginLeft: 24 }}
+              type="primary"
+              htmlType="submit"
+              onClick={() => UsingExampleUser()}
+          >
+            Using Example User
+          </Button>
           <div>
             {!!errorValidate && !!errorValidate.get("Name") && (
               <Alert
